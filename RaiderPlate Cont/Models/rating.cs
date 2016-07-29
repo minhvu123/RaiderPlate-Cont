@@ -16,7 +16,10 @@ namespace RaiderPlate_Cont.Models
     {
         public int RatingID { get; set; }
         public string StarCount { get; set; }
-        public int CustomerID { get; set; }
-        public int ItemID { get; set; }
+        public int accountID { get; set; }
+        public int productID { get; set; }
+    
+        public virtual account account { get; set; }
+        public virtual product product { get; set; }
     }
 }

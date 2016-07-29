@@ -13,10 +13,10 @@ namespace RaiderPlate_Cont.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class rpEntity : DbContext
+    public partial class raiderplateEntities : DbContext
     {
-        public rpEntity()
-            : base("name=rpEntity")
+        public raiderplateEntities()
+            : base("name=raiderplateEntities")
         {
         }
     
@@ -26,13 +26,9 @@ namespace RaiderPlate_Cont.Models
         }
     
         public virtual DbSet<account> accounts { get; set; }
-        public virtual DbSet<category> categories { get; set; }
         public virtual DbSet<hall> halls { get; set; }
         public virtual DbSet<location> locations { get; set; }
-        public virtual DbSet<orderitem> orderitems { get; set; }
-        public virtual DbSet<order> orders { get; set; }
         public virtual DbSet<product> products { get; set; }
         public virtual DbSet<rating> ratings { get; set; }
-        public virtual DbSet<type> types { get; set; }
     }
 }

@@ -14,6 +14,12 @@ namespace RaiderPlate_Cont.Models
     
     public partial class account
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public account()
+        {
+            this.ratings = new HashSet<rating>();
+        }
+    
         public int accountID { get; set; }
         public string username { get; set; }
         public string password { get; set; }
@@ -21,5 +27,8 @@ namespace RaiderPlate_Cont.Models
         public string name { get; set; }
         public string email { get; set; }
         public string phone { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<rating> ratings { get; set; }
     }
 }

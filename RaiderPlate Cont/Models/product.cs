@@ -14,11 +14,19 @@ namespace RaiderPlate_Cont.Models
     
     public partial class product
     {
-        public int ItemID { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public product()
+        {
+            this.ratings = new HashSet<rating>();
+        }
+    
+        public int productID { get; set; }
         public int locationID { get; set; }
-        public string name { get; set; }
-        public double price { get; set; }
+        public string productName { get; set; }
+        public double productPrice { get; set; }
     
         public virtual location location { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<rating> ratings { get; set; }
     }
 }
