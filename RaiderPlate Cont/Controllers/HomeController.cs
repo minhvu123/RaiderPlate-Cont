@@ -27,6 +27,7 @@ namespace RaiderPlate_Cont.Controllers
             return View();
         }
         
+        [HttpGet]
         public JsonResult GetRestaurants(String ID)
         {
             int hallID = int.Parse(ID);
@@ -38,10 +39,28 @@ namespace RaiderPlate_Cont.Controllers
             }
             return Json(new SelectList(listRest, "LocationID", "LocationName"), JsonRequestBehavior.AllowGet);
         }
-        [HttpPost]
-        public virtual JsonResult GetMenu()
+        
+        [HttpGet]
+        public JsonResult GetMenu(String ID)
         {
-
+            int i = int.Parse(ID);
+            List<product> listProduct = new List<product>();
+            foreach(product p in entity.products.ToList())
+            {
+                if (p.locationID == i)
+                {
+                    product temp = new product
+                    {
+                        locationID = i,
+                        productID = p.productID,
+                        productName = p.productName,
+                        productPrice = p.productPrice
+                    };
+                    listProduct.Add(temp);
+                }   
+            }
+            
+            return Json(listProduct.ToList(), JsonRequestBehavior.AllowGet);
         }
     }
 }

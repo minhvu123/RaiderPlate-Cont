@@ -1,6 +1,6 @@
 ﻿
 @*@model IPagedList<RaiderPlate_Cont.Models.product>*@
-@model IEnumerable<RaiderPlate_Cont.Models.product>
+@*@model IEnumerable<RaiderPlate_Cont.Models.product>*@
 @{
     ViewBag.Title = "Home Page";
 }
@@ -14,30 +14,71 @@
 
          $('#Halls').change(function () {
              $("#Rest").empty();
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("GetRestaurants")', // we are calling json method
+             $("#Rest").append('<option>--Select--</option>');
+             if ($('#Halls').val() != "")
+             {
+                 $.ajax({
+                     type: 'GET',
+                     url: '@Url.Action("GetRestaurants")', // we are calling json method
 
-                dataType: 'json',
+                     dataType: 'json',
 
-                data: { id: $("#Halls").val() },
-                // here we are get value of selected hall and passing same value
-                // as inputto json method GetRestaurants.
+                     data: { id: $("#Halls").val() },
+                     // here we are get value of selected hall and passing same value
+                     // as inputto json method GetRestaurants.
 
-                success: function (restaurants) {
-                    // locations contains the JSON formatted list
-                    // of locations passed from the controller
-                    $.each(restaurants, function (i, rest) {
-                        $("#Rest").append('<option value="' + rest.Value + '">' +
-                             rest.Text + '</option>');
+                     success: function (restaurants) {
+                         // locations contains the JSON formatted list
+                         // of locations passed from the controller
+                         $.each(restaurants, function (i, rest) {
+                             $("#Rest").append('<option value="' + rest.Value + '">' +
+                                  rest.Text + '</option>');
 
-                    });
-                },
-                error: function (ex) {
-                    alert('Failed to retrieve states.' + ex);
-                }
-            });
-        });
+                         });
+                     },
+                     error: function (ex) {
+                         alert('Failed to retrieve states.' + ex);
+                     }
+                 });
+             }
+
+         });
+         $('#Rest').change(function () {
+             $('#menuBody').empty();
+             $.ajax({
+                 url: '@Url.Action("GetMenu")',
+                 type: "get",
+                 contentType: "application/json; charset=utf-8",
+                 dataType: "json",
+                 data: { id: $("#Rest").val() },
+
+                 success: function (data) {
+                     // since we are using jQuery, you don't need to parse response
+                     drawTable(data);
+                 }
+             });
+
+             function drawTable(data) {
+
+                 for (var i = 0; i < data.length; i++) {
+                     drawRow(data[i]);
+                 }
+             }
+
+             function drawRow(rowData) {
+                 var row = $("<tr id="+rowData.productID+"/>")
+                 $("#menuTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+                 row.append($("<td>" + rowData.productID + "</td>"));
+                 row.append($("<td>" + rowData.productName + "</td>"));
+                 row.append($("<td>" + rowData.productPrice + "</td>"));
+             }
+         });
+         
+         $('#menuBody').delegate("tr", "click", function(e) {
+             var rowID = $(this).attr('ID');
+             window.location.href = "/Cart/Add/" + rowID;
+         });
+
     });
 </script>
 
@@ -46,18 +87,15 @@
             <div class="panel panel-success col-xs-12 col-md-3" style="border-left:1px;border-right:1px;">
                 <fieldset>
                     <legend>Halls:</legend>
-                    @Html.DropDownList("Halls",ViewBag.Halls as SelectList, "Select a Hall")
+                    @Html.DropDownList("Halls",ViewBag.Halls as SelectList,"--Select--")
                     <legend>Restaurants:</legend>
                     <div>
-                        @Html.DropDownList("Rest", new SelectList(string.Empty, "Value", "Text"), "Please select a Restaurant", new { style = "width:200px", @class = "dropdown1" })
+                        @Html.DropDownList("Rest", new SelectList(string.Empty, "Value", "Text"), "--Select--", new { style = "width:200px", @class = "dropdown1" })
                     </div>
-                    <p>
-                        <input type="submit" value="Submit" id="SubmitID"/>
-                    </p>
                 </fieldset>
             </div>
             <div class="panel panel-success col-xs-12 col-md-9" style="border-left:2px;border-right:2px;">
-                <table class="table sortable table-striped table-hover table-responsive">
+                <table id ="menuTable"class="table sortable table-striped table-hover table-responsive">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -65,7 +103,8 @@
                             <th>Price</th>
                         </tr>
                     </thead>
-                    <tbody class="row">
+                    <tbody id="menuBody"/>
+                    @*<tbody class="row">
                         @foreach (product p in Model)
                         {
                                 <tr onclick="location.href ='@Url.Action("Add","Cart",new {id = p.productID},null)'">
@@ -74,7 +113,7 @@
                                     <td>$@p.productPrice</td>
                                 </tr>
                         }
-                    </tbody>
+                    </tbody>*@
                 </table>
                 <br />
                 @*@Html.PagedListPager(Model, page => Url.Action("Index",new { page, pageSize = Model.PageSize}))*@

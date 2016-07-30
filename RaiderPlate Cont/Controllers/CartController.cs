@@ -50,5 +50,37 @@ namespace RaiderPlate_Cont.Controllers
             Session["cart"] = cart;
             return RedirectToAction("Index");
         }
+
+        //public ActionResult Delete(int id)
+        //{
+        //    List<Item> cart = (List<Item>)Session["cart"];
+        //    cart.RemoveAt(isExisted(id));
+        //    Session["cart"] = cart;
+        //    return RedirectToAction("Index");
+        //}
+        [HttpPost]
+        public ActionResult Delete(IEnumerable<int> DeletedId)
+        {
+            List<Item> cart = (List<Item>)Session["cart"];
+            foreach (int id in DeletedId)
+            {
+                cart.RemoveAt(isExisted(id));
+            }
+            Session["cart"] = cart;
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult Update(FormCollection form)
+        {
+            String[] quantities = form.GetValues("quantity");
+            List<Item> cart = (List<Item>)Session["cart"];
+            for (int i = 0; i < cart.Count; i++)
+            {
+                cart[i].Quantity = int.Parse(quantities[i]);
+            }
+
+            Session["cart"] = cart;
+            return RedirectToAction("Index");
+        }
     }
 }
