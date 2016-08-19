@@ -12,12 +12,11 @@ namespace RaiderPlate_Cont.Controllers
         private raiderplateEntities entity = new raiderplateEntities();   
         public ActionResult Index(int page =1 , int pageSize =10)
         {
-            List<product> listProducts = entity.products.ToList();
             List<hall> listHall = new List<hall>();
             foreach (var r in entity.halls.ToList())
                 listHall.Add(r); 
             ViewBag.Halls = new SelectList(listHall, "HallID", "HallName");
-            return View(listProducts);
+            return View();
         }
 
         public ActionResult About()
@@ -43,7 +42,8 @@ namespace RaiderPlate_Cont.Controllers
         [HttpGet]
         public JsonResult GetMenu(String ID)
         {
-            int i = int.Parse(ID);
+            int i =int.Parse(ID);
+            
             List<product> listProduct = new List<product>();
             foreach(product p in entity.products.ToList())
             {

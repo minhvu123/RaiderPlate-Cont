@@ -10,13 +10,35 @@
 
 <script src="~/Scripts/jquery-1.10.2.js"></script>
 <script type="text/javascript">
-     $(document).ready(function () {
+    $(document).ready(function () {
+         $(window).load(function () {
+             loadLocation();
+         });
 
-         $('#Halls').change(function () {
-             $("#Rest").empty();
-             $("#Rest").append('<option>--Select--</option>');
-             if ($('#Halls').val() != "")
-             {
+         $('#Halls').change(loadLocation);
+         $('#Rest').change(loadMenu);
+
+         $('#menuBody').delegate("tr", "click", function(e) {
+             var rowID = $(this).attr('ID');
+             $.ajax({
+                 ype: 'GET',
+                 url: '@Url.Action("Add","Cart")', // we are calling json method
+
+                 dataType: '',
+
+                 data: { id: rowID },
+                 // here we are get value of selected hall and passing same value
+                 // as inputto json method GetRestaurants.
+
+                 success: function () {
+
+                 }
+             });
+         });
+
+        function loadLocation() {
+            $("#Rest").empty();
+             if ($('#Halls').val() != "") {
                  $.ajax({
                      type: 'GET',
                      url: '@Url.Action("GetRestaurants")', // we are calling json method
@@ -30,6 +52,7 @@
                      success: function (restaurants) {
                          // locations contains the JSON formatted list
                          // of locations passed from the controller
+                         //$("#Rest").append('<option>--Select Restaurant--</option>');
                          $.each(restaurants, function (i, rest) {
                              $("#Rest").append('<option value="' + rest.Value + '">' +
                                   rest.Text + '</option>');
@@ -41,79 +64,72 @@
                      }
                  });
              }
+            loadMenu();
+         }
 
-         });
-         $('#Rest').change(function () {
+        function loadMenu() {
+             
              $('#menuBody').empty();
-             $.ajax({
-                 url: '@Url.Action("GetMenu")',
-                 type: "get",
-                 contentType: "application/json; charset=utf-8",
-                 dataType: "json",
-                 data: { id: $("#Rest").val() },
+             if ($('#Rest').val()==null) {
+                 return setTimeout(loadMenu, 10);
+             }
+             else {
+                 $.ajax({
+                     url: '@Url.Action("GetMenu")',
+                     type: "get",
+                     contentType: "application/json; charset=utf-8",
+                     dataType: "json",
+                     data: { id: $('#Rest').val()},
 
-                 success: function (data) {
-                     // since we are using jQuery, you don't need to parse response
-                     drawTable(data);
+                     success: function (data) {
+                         // since we are using jQuery, you don't need to parse response
+                         drawTable(data);
+                     }
+                 });
+
+                 function drawTable(data) {
+
+                     for (var i = 0; i < data.length; i++) {
+                         drawRow(data[i]);
+                     }
                  }
-             });
 
-             function drawTable(data) {
-
-                 for (var i = 0; i < data.length; i++) {
-                     drawRow(data[i]);
+                 function drawRow(rowData) {
+                     var row = $("<tr id=" + rowData.productID + "/>")
+                     $("#menuTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+                     row.append($("<td>" + rowData.productName + "</td>"));
+                     row.append($("<td>$ " + rowData.productPrice + "</td>"));
                  }
              }
-
-             function drawRow(rowData) {
-                 var row = $("<tr id="+rowData.productID+"/>")
-                 $("#menuTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
-                 row.append($("<td>" + rowData.productID + "</td>"));
-                 row.append($("<td>" + rowData.productName + "</td>"));
-                 row.append($("<td>" + rowData.productPrice + "</td>"));
-             }
-         });
-         
-         $('#menuBody').delegate("tr", "click", function(e) {
-             var rowID = $(this).attr('ID');
-             window.location.href = "/Cart/Add/" + rowID;
-         });
-
+         }
     });
 </script>
 
-<div class="container" style="display:block">
-            
-            <div class="panel panel-success col-xs-12 col-md-3" style="border-left:1px;border-right:1px;">
-                <fieldset>
-                    <legend>Halls:</legend>
-                    @Html.DropDownList("Halls",ViewBag.Halls as SelectList,"--Select--")
-                    <legend>Restaurants:</legend>
-                    <div>
-                        @Html.DropDownList("Rest", new SelectList(string.Empty, "Value", "Text"), "--Select--", new { style = "width:200px", @class = "dropdown1" })
-                    </div>
-                </fieldset>
-            </div>
-            <div class="panel panel-success col-xs-12 col-md-9" style="border-left:2px;border-right:2px;">
-                <table id ="menuTable"class="table sortable table-striped table-hover table-responsive">
+<div class="container" style="display:block">  
+                <div class="container" 
+                     style="border-left:1px;border-right:1px;background-color:#cc0000;margin-bottom:15px; padding-bottom:15px">
+                    <fieldset class="col-xs-12 col-md-4">
+                        <legend style="color:#000">Halls:</legend>
+                        <div >@Html.DropDownList("Halls", ViewBag.Halls as SelectList)
+                        </div>
+                    </fieldset>
+                    <fieldset class="col-xs-12 col-md-4">
+                        <legend style="color:#000">Restaurants:</legend>
+                        <div class="dropdown-toggle">
+                            @Html.DropDownList("Rest", new SelectList(string.Empty, "Value", "Text"), new { style = "width:200px", @class = "dropdown1" })
+                        </div>
+                    </fieldset>
+                    <div class="col-xs-12 col-md-4"></div>
+                </div>
+            <div class=" col-xs-12" >
+                <table id ="menuTable"class="table table-striped table-hover table-responsive" style="border-collapse:collapse">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th class="col-xs-9 col-md-10">Name</th>
                             <th>Price</th>
                         </tr>
                     </thead>
-                    <tbody id="menuBody"/>
-                    @*<tbody class="row">
-                        @foreach (product p in Model)
-                        {
-                                <tr onclick="location.href ='@Url.Action("Add","Cart",new {id = p.productID},null)'">
-                                    <td>@p.productID</td>
-                                    <td class="col-xs-9 col-md-10" style="color:#cc0055">@p.productName</td>
-                                    <td>$@p.productPrice</td>
-                                </tr>
-                        }
-                    </tbody>*@
+                    <tbody id="menuBody"/>                    
                 </table>
                 <br />
                 @*@Html.PagedListPager(Model, page => Url.Action("Index",new { page, pageSize = Model.PageSize}))*@

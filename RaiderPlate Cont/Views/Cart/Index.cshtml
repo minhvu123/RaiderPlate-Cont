@@ -8,6 +8,9 @@
 <script src="~/Scripts/jquery-1.10.2.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
+        $(window).load(function () {
+            loadCart();
+        });
         $("#checkAll").click(function () {
             $(".checkbox").prop('checked', $(this).prop('checked'));
         });
@@ -19,6 +22,48 @@
         $("#delete").click(function () {
             $("form").attr("action", "/cart/delete");
         });
+
+        function loadCart() {
+            $('#cartBody').empty();
+                $.ajax({
+                    url: '@Url.Action("GetCart")',
+                    type: "get",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    data: {},
+
+                    success: function (data) {
+                        // since we are using jQuery, you don't need to parse response
+                        drawTable(data);
+                    }
+                });
+
+                function drawTable(data) {
+                    var SubTotal = 0;
+                    for (var i = 0; i < data.length; i++) {
+                        drawRow(data[i]);
+                        SubTotal += data[i].Product.productPrice * data[i].Quantity;
+                    }
+                    var finalRow = $("<tr/>")
+                    $("#cartTable").append(finalRow);
+                    finalRow.append($(" <td></td>"));
+                    finalRow.append($(" <td colspan='3'>SubTotal</td>"));
+                    finalRow.append($(" <td>$ " + SubTotal.toFixed(2) + "</td>"));
+                }
+
+                function drawRow(rowData) {
+                    var cost = rowData.Product.productPrice * rowData.Quantity
+                    var row = $("<tr/>")
+                    $("#cartTable").append(row); //this will append tr element to table... keep its reference for a while since we will add cels into it
+                    row.append($("<td><input type='checkbox' class='checkbox' name='DeletedID' value='"
+                                + rowData.Product.productID + "'/></td>"));
+                    row.append($("<td>" + rowData.Product.productName + "</td>"));
+                    row.append($("<td>$ " + rowData.Product.productPrice + "</td>"));
+                    row.append($("<td><input type='number' min='0' max='99' value='"+rowData.Quantity+"' name='quantity'/></td>"));
+                    row.append($("<td>$ " + cost.toFixed(2) + "</td>"));
+
+                }
+        }
     });
 </script>
 
@@ -26,10 +71,12 @@
     <legend>Your cart:</legend>
     @using (Html.BeginForm(FormMethod.Post))
     {
-        <table class="table table-striped table-responsive" style="width:100%">
+        <table id="cartTable" class="table table-striped table-responsive" style="width:100%">
             <thead>
                 <tr>
-                    <th colspan="4" align="left"><input type="submit" id="delete" value="Delete Selected Item" /></th>
+                    <th colspan="3" align="left"></th>
+                    <th colspan="2" align="left">
+                        <input class="btn btn-info" type="submit" id="update" value="Update Quantity" /></th>
                 </tr>
                 <tr>
                     <th><input type="checkbox" id="checkAll" value="Product ID" /></th>
@@ -39,11 +86,9 @@
                     <th>Cost</th>
                 </tr>
             </thead>
-            <tbody>
-                @{
-                    double sum = 0;
-                }
-                @if (Model != null)
+            <tbody id="cartBody">
+
+                @*@if (Model != null)
                 {
                     int count = 0;
                     foreach (Item i in (List<Item>)Model)
@@ -53,24 +98,29 @@
                             <td><input type="checkbox" class="checkbox" name="DeletedID" value="@i.Product.productID"/></td>
                             <td>@i.Product.productName</td>
                             <td>@i.Product.productPrice</td>
-                            <td><input type="number" min="0" max="99" value="@i.Quantity" name="quantity"/>
-                                <input type="submit" id ="update" value="Update"/>
-                            </td>
+                            <td><input type="number" min="0" max="99" value="@i.Quantity" name="quantity"/></td>
                             <td>$ @(i.Product.productPrice * i.Quantity)</td>
                         </tr>
                         count++;
                     }
-                }
-                <tr>
-                    <td></td>
-                    <td colspan="3">SubTotal</td>
-                    <td>$ @sum</td>
-                </tr>
+                }*@
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" align="left">
+                        <input class="btn btn-remove" type="submit" id="delete" value="Delete Selected Item" />
+                        <button type="button" class="btn btn-success"
+                                onclick="location.href='@Url.Action("Index","Home"@*, new { id = ViewData["locationID"]}*@)'">
+                            Continue Shopping
+                        </button>
+                    </td>
+                </tr>
+            </tfoot>
         </table>
     }
    
 
-    <button type="button" onclick="location.href='@Url.Action("Index","Home")'">Continue Shopping</button>
+    
+    
 </fieldset>
 
